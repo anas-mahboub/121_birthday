@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=5, user-scalable=yes">
+    <title>Happy Birthday</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .text-element {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 100px;
+            font-weight: bold;
+            color: #ff1493;
+            text-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493;
+            opacity: 0;
+            transition: opacity 0.5s;
+            max-width: 90vw;
+            white-space: nowrap;
+        }
+
+        .countdown {
+            font-size: 150px;
+            color: #fff;
+        }
+
+        .heart {
+            font-size: 120px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .character {
+            font-size: 100px;
+            animation: bounce 1s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .photo-section {
+            position: absolute;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .message-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .message-text {
+            color: #d4a5a5;
+            font-size: 20px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .photos-grid img {
+            width: 250px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid #ff1493;
+        }
+
+        .heart-collage {
+            position: absolute;
+            display: none;
+            width: 800px;
+            height: 700px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .heart-photo {
+            position: absolute;
+            width: clamp(90px, 12vw, 130px);
+            height: clamp(110px, 16vw, 150px);
+            object-fit: cover;
+            border-radius: 15px;
+            border: 4px solid #ff1493;
+            box-shadow: 0 5px 20px rgba(255, 20, 147, 0.6);
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+
+        .heart-photo:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+
+        @media (max-width: 820px) {
+            .content {
+                padding: 20px 16px;
+            }
+
+            .text-element,
+            .countdown,
+            .heart,
+            .character {
+                font-size: clamp(2rem, 8vw, 5rem);
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+            }
+
+            .message-box {
+                padding: 18px 24px;
+            }
+
+            .message-text {
+                font-size: clamp(16px, 4vw, 20px);
+            }
+
+            .photos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .photos-grid img {
+                width: 100%;
+                height: auto;
+                max-height: 280px;
+            }
+
+            .heart-collage {
+                position: static;
+                width: min(90vw, 800px);
+                height: auto;
+                margin: 40px auto 0;
+                transform: none;
+            }
+
+            .heart-photo {
+                width: clamp(80px, 14vw, 110px);
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="content">
+        <div id="countdown" class="text-element countdown"></div>
+        <div id="happyText" class="text-element">HAPPY</div>
+        <div id="birthdayText" class="text-element">BIRTHDAY</div>
+        <div id="toText" class="text-element">TO</div>
+        <div id="nameText" class="text-element">Malak</div>
+        <div id="heart" class="text-element heart">💗</div>
+        <div id="character" class="character">🎂🎉</div>
+        
+        <div id="photoSection" class="photo-section">
+            <div class="message-box">
+                <div class="message-text">Happy Birthday Malak 🧡</div>
+            </div>
+            <div class="photos-grid">
+                <img src="photo1.jpg" alt="Photo 1">
+                <img src="photo2.jpg" alt="Photo 2">
+            </div>
+        </div>
+
+        <div id="messageSection" class="photo-section">
+            <div class="message-box">
+                <div class="message-text">As long as you're smiling, I'm happy. Stay happy, my love 💕</div>
+            </div>
+            <div class="photos-grid">
+                <img src="photo3.jpg" alt="Photo 3">
+                <img src="photo4.jpg" alt="Photo 4">
+            </div>
+        </div>
+
+        <div id="heartCollage" class="heart-collage"></div>
+    </div>
+
+    <script>
+        // Matrix Rain
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * -100;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff1493';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 35);
+
+        // Animation Sequence
+        async function showText(element, duration = 1000) {
+            element.style.opacity = '1';
+            await new Promise(r => setTimeout(r, duration));
+            element.style.opacity = '0';
+            await new Promise(r => setTimeout(r, 300));
+        }
+
+        async function runAnimation() {
+            // Countdown
+            const countdown = document.getElementById('countdown');
+            countdown.style.display = 'block';
+            countdown.textContent = '3';
+            countdown.style.opacity = '1';
+            await new Promise(r => setTimeout(r, 1000));
+            countdown.textContent = '2';
+            await new Promise(r => setTimeout(r, 1000));
+            countdown.textContent = '1';
+            await new Promise(r => setTimeout(r, 1000));
+            countdown.style.display = 'none';
+
+            // HAPPY
+            const happy = document.getElementById('happyText');
+            happy.style.display = 'block';
+            await showText(happy, 1500);
+
+            // BIRTHDAY
+            const birthday = document.getElementById('birthdayText');
+            birthday.style.display = 'block';
+            await showText(birthday, 1500);
+
+            // TO
+            const to = document.getElementById('toText');
+            to.style.display = 'block';
+            await showText(to, 1000);
+
+            // NAME
+            const name = document.getElementById('nameText');
+            name.style.display = 'block';
+            await showText(name, 2000);
+
+            // Heart
+            const heart = document.getElementById('heart');
+            heart.style.display = 'block';
+            await new Promise(r => setTimeout(r, 2000));
+            heart.style.display = 'none';
+
+            // Character
+            const character = document.getElementById('character');
+            character.style.display = 'block';
+            await new Promise(r => setTimeout(r, 2500));
+            character.style.display = 'none';
+
+            // Photo Section 1
+            const photoSection = document.getElementById('photoSection');
+            photoSection.style.display = 'flex';
+            await new Promise(r => setTimeout(r, 4000));
+            photoSection.style.display = 'none';
+
+            // Message Section
+            const messageSection = document.getElementById('messageSection');
+            messageSection.style.display = 'flex';
+            await new Promise(r => setTimeout(r, 4000));
+            messageSection.style.display = 'none';
+
+            // Heart Collage
+            createHeartCollage();
+        }
+
+        function createHeartCollage() {
+            const collage = document.getElementById('heartCollage');
+            collage.style.display = 'block';
+
+            // Replace these with your actual heart collage photos.
+            // Use distinct image files to avoid repeating the same pictures.
+            const photos = [
+                'photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg',
+                'photo5.jpg', 'photo6.jpg', 'photo7.jpg', 'photo8.jpg',
+            ];
+            
+            // Heart shape positions - arranged to form a heart outline
+            const heartPositions = [
+                // Top left curve
+                {x: 280, y: 80, rotate: -25},
+                {x: 220, y: 120, rotate: -30},
+                {x: 170, y: 180, rotate: -20},
+                {x: 140, y: 250, rotate: -10},
+                
+                // Left side going down
+                {x: 130, y: 330, rotate: 0},
+                {x: 140, y: 410, rotate: 10},
+                {x: 180, y: 480, rotate: 20},
+                
+                // Bottom point area
+                {x: 250, y: 530, rotate: 10},
+                {x: 330, y: 560, rotate: 0},
+                {x: 410, y: 530, rotate: -10},
+                
+                // Right side going up
+                {x: 470, y: 480, rotate: -20},
+                {x: 510, y: 410, rotate: -10},
+                {x: 520, y: 330, rotate: 0},
+                
+                // Top right curve
+                {x: 510, y: 250, rotate: 10},
+                {x: 480, y: 180, rotate: 20},
+                {x: 430, y: 120, rotate: 30},
+                {x: 370, y: 80, rotate: 25},
+                
+                // Inner fill photos
+                {x: 250, y: 200, rotate: -5},
+                {x: 400, y: 200, rotate: 5},
+                {x: 325, y: 280, rotate: 0},
+                {x: 230, y: 350, rotate: -5},
+                {x: 420, y: 350, rotate: 5},
+                {x: 325, y: 420, rotate: 0}
+            ];
+
+            heartPositions.forEach((pos, index) => {
+                const img = document.createElement('img');
+                img.src = photos[index] || photos[index % photos.length];
+                img.className = 'heart-photo';
+                img.style.left = pos.x + 'px';
+                img.style.top = pos.y + 'px';
+                img.style.transform = `rotate(${pos.rotate}deg)`;
+                img.style.animationDelay = (index * 0.15) + 's';
+                collage.appendChild(img);
+            });
+        }
+
+        setTimeout(runAnimation, 1000);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
